@@ -81,7 +81,8 @@ def main():
 			autoencoder = Model(input_img, decoder(encoder(input_img, conv_layers, conv_filter_size, n_conv_filters_per_layer)))
 
 			# compile the model
-			autoencoder.compile(loss='mean_squared_error', optimizer=RMSprop())
+			# theory has shown that the best optimizer for the mnist dataset is the following
+			autoencoder.compile(loss='categorical_crossentropy', optimizer = RMSprop(lr=0.001, rho=0.9, epsilon=1e-08, decay=0.0))
 
 			# visualize the layers that we've created using summary()
 			autoencoder.summary()
@@ -120,11 +121,11 @@ def main():
 				plt.savefig(plot_path)
 				# show the plot in a pop-up
 				plt.show()
-				break
+				continue
 			elif (choice == 3):
     			# demand a datapath to save the model
 				path = input("Give the path and the name of the file to save the model")
-				autoencoder.save_weights(path)
+				autoencoder.save(path)
 				# break the loop: model training is finished
 				offside = True
 				break

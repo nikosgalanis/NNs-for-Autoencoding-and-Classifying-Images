@@ -12,47 +12,46 @@ from keras.layers import UpSampling2D
 from keras import Input
 
 def decoder(encoder_result):
-    	print("Decoder")
 	# gather the info given by the encoder tuple
-	prev_conv_layer, decoding_layers, conv_filter_size, current_filters_per_layer = encoder_result
+    prev_conv_layer, decoding_layers, conv_filter_size, current_filters_per_layer = encoder_result
 
 	# divide the filters by 2
-	current_filters_per_layer /= 2
+    current_filters_per_layer /= 2
 
-	# the decoding layers are one less than the encoding ones
-	decoding_layers -= 1
+    # the decoding layers are one less than the encoding ones
+    decoding_layers -= 1
 
-	# for the first n-1 layers of the decoder
-	for i in range (0, decoding_layers - 1):
-		# apply convolution and batch normalization 2 times
-		conv_layer = Conv2D(current_filters_per_layer, (conv_filter_size, conv_filter_size), activation='relu', padding='same')(prev_conv_layer)
-		conv_layer = BatchNormalization()(conv_layer)
-		conv_layer = Conv2D(current_filters_per_layer, (conv_filter_size, conv_filter_size), activation='relu', padding='same')(conv_layer)
-		conv_layer = BatchNormalization()(conv_layer)
-		print(i, current_filters_per_layer)
-		
-		# again, devide the filters per layer by 2
-		current_filters_per_layer /= 2
+    # for the first n-1 layers of the decoder
+    for i in range (0, decoding_layers - 1):
+        # apply convolution and batch normalization 2 times
+        conv_layer = Conv2D(current_filters_per_layer, (conv_filter_size, conv_filter_size), activation='relu', padding='same')(prev_conv_layer)
+        conv_layer = BatchNormalization()(conv_layer)
+        conv_layer = Conv2D(current_filters_per_layer, (conv_filter_size, conv_filter_size), activation='relu', padding='same')(conv_layer)
+        conv_layer = BatchNormalization()(conv_layer)
+        print(i, current_filters_per_layer)
+        
+        # again, devide the filters per layer by 2
+        current_filters_per_layer /= 2
 
-		# to satisfy the next loop, the current layer becomes the previous one
-		prev_conv_layer = conv_layer
+        # to satisfy the next loop, the current layer becomes the previous one
+        prev_conv_layer = conv_layer
 
-	# after the completion of the loop, apply an upsampling technique
-	upsampling = UpSampling2D((2,2))(prev_conv_layer)
+    # after the completion of the loop, apply an upsampling technique
+    upsampling = UpSampling2D((2,2))(prev_conv_layer)
 
-	print(current_filters_per_layer)
- 
-	# the last layer takes its input from the upsampling that we've performed
-	last_conv_layer = Conv2D(current_filters_per_layer, (conv_filter_size, conv_filter_size), activation='relu', padding='same')(upsampling)
-	last_conv_layer = BatchNormalization()(last_conv_layer)
-	last_conv_layer = Conv2D(current_filters_per_layer, (conv_filter_size, conv_filter_size), activation='relu', padding='same')(last_conv_layer)
-	last_conv_layer = BatchNormalization()(last_conv_layer)
-	
-	# apply one last time the upsampling technique
-	upsampling = UpSampling2D((2,2))(last_conv_layer)
+    print(current_filters_per_layer)
 
-	# the decoded array is produced by applying 2d convolution one last time, this one with a sigmoid activation function
-	decoded = Conv2D(1, (conv_filter_size, conv_filter_size), activation='sigmoid', padding='same')(upsampling)
+    # the last layer takes its input from the upsampling that we've performed
+    last_conv_layer = Conv2D(current_filters_per_layer, (conv_filter_size, conv_filter_size), activation='relu', padding='same')(upsampling)
+    last_conv_layer = BatchNormalization()(last_conv_layer)
+    last_conv_layer = Conv2D(current_filters_per_layer, (conv_filter_size, conv_filter_size), activation='relu', padding='same')(last_conv_layer)
+    last_conv_layer = BatchNormalization()(last_conv_layer)
 
-	return decoded
+    # apply one last time the upsampling technique
+    upsampling = UpSampling2D((2,2))(last_conv_layer)
+
+    # the decoded array is produced by applying 2d convolution one last time, this one with a sigmoid activation function
+    decoded = Conv2D(1, (conv_filter_size, conv_filter_size), activation='sigmoid', padding='same')(upsampling)
+
+    return decoded
 
