@@ -124,8 +124,8 @@ def main():
 				continue
 			elif (choice == 3):
     			# demand a datapath to save the model
-				path = input("Give the path and the name of the file to save the model")
-				autoencoder.save(path)
+				path = input("Give the path and the name of the file to save the model\n")
+				autoencoder.save(path + ".h5", save_format='h5')
 				# break the loop: model training is finished
 				offside = True
 				break
