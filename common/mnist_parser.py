@@ -44,7 +44,7 @@ def parse_X(path):
 			else:
 				curr_col += 1
 	
-	return result
+	return (result, rows, columns)
 
 
 # parse the labels of the MNIST dataset

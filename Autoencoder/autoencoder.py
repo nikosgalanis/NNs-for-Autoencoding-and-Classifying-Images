@@ -16,124 +16,16 @@ from keras.layers.convolutional import Conv2D
 from keras.layers.normalization import BatchNormalization
 from keras.layers import MaxPooling2D
 from keras.layers import UpSampling2D
+from keras import Input
+
+from matplotlib import pyplot as plt
 
 import tensorflow as tf
 
 from common.mnist_parser import *
 
-# encoding function for the autoencoder
-"""
-FUNCTION USAGE: The user gives the desired hyperparameters as following:
- - input_image: the shape of the images that the model is going to predict later
- - conv_layers: the number of convolution layers that the encoder will apply to the image
- - conv_filter_size: The size of the filter during each one of the convolution layers
- - n_conv_filters_per_layer: The number of filters in the first layer, each time multiplied by 2
-
- The encoder applies convolution, and batch normalization as many times as the 
- user has requested, and applies pooling after the 2 first layers, and returns 
- a tuple containing all the usefull info (result + hyperparameters).
-"""
-def encoder(input_image, conv_layers, conv_filter_size, n_conv_filters_per_layer):
-
-	# first layer: differs because it takes as input the shape of the image
-	first_layer = Conv2D(n_conv_filters_per_layer, (conv_filter_size, conv_filter_size), activation='relu', padding='same')(input_image)
-	first_layer = BatchNormalization()(first_layer)
-	first_layer = Conv2D(n_conv_filters_per_layer, (conv_filter_size, conv_filter_size), activation='relu', padding='same')(first_layer)
-	first_layer = BatchNormalization()(first_layer)
-
-	# pooling after first layer
-	pool = MaxPooling2D(pool_size=(2,2))(first_layer)
-
-	# the encoding layers are the number of layers given to us as an argument (TODO: possibly change)
-	encoding_layers = conv_layers
-
-	# each time, we will be nultiplying the filters per layer by 2
-	current_filters_per_layer = 2 * n_conv_filters_per_layer
-
-	# for the remaining encoding layers
-	for i in range (1, encoding_layers):
-		# the first 2 take an input from the pooling
-		if (i == 1 or i == 2):
-			conv_layer = Conv2D(current_filters_per_layer, (conv_filter_size, conv_filter_size), activation='relu', padding='same')(pool)
-		# the others from the previous convolution layer
-		else:
-			conv_layer = Conv2D(current_filters_per_layer, (conv_filter_size, conv_filter_size), activation='relu', padding='same')(conv_layer)
-
-		# after that, wy apply batch normalization, convolution and the again batch normalization
-		conv_layer = BatchNormalization()(conv_layer)
-		conv_layer = Conv2D(current_filters_per_layer, (conv_filter_size, conv_filter_size), activation='relu', padding='same')(conv_layer)
-		conv_layer = BatchNormalization()(conv_layer)
-		print(i, current_filters_per_layer)
-		# on the 1st layer in the loop(aka the 2nd), we want pooling
-		if (i == 1):
-			pool = MaxPooling2D(pool_size=(2,2))(conv_layer)
-		# each time (except the last one, we multiply the filters per layer by 2)
-		if (i < encoding_layers - 1):
-			current_filters_per_layer *= 2
-
-	# return a tuple containing all the usefull info that we gathered from the encoder
-	return (conv_layer, encoding_layers, conv_filter_size, current_filters_per_layer)
-
-
-# decoding function for the autoencoder
-"""
-FUNCTION USAGE: The function recieves an encoder result, as a tuple, with the following 
-parameters included:
- - prev_conv_layer: The shape and the characteristics of the matrix produced by the last encoding step
- - decoding_layers: the number of convolution layers that the decoder will apply to the image
- - conv_filter_size: The size of the filter during each one of the convolution layers
- - n_conv_filters_per_layer: The number of filters that will be used in the 1st step of the decoder,
-	 each time divided by 2
-
- The decoder applies convolution, and batch normalization as many times as the 
- user has requested, and applies upasmpling after the last 2 layers, and returns 
- the shape of our array after the decoding proccedure, along with all its data
-"""
-def decoder(encoder_result):
-	print("Decoder")
-	# gather the info given by the encoder tuple
-	prev_conv_layer, decoding_layers, conv_filter_size, current_filters_per_layer = encoder_result
-
-	# divide the filters by 2
-	current_filters_per_layer /= 2
-
-	# the decoding layers are one less than the encoding ones
-	decoding_layers -= 1
-
-	# for the first n-1 layers of the decoder
-	for i in range (0, decoding_layers - 1):
-		# apply convolution and batch normalization 2 times
-		conv_layer = Conv2D(current_filters_per_layer, (conv_filter_size, conv_filter_size), activation='relu', padding='same')(prev_conv_layer)
-		conv_layer = BatchNormalization()(conv_layer)
-		conv_layer = Conv2D(current_filters_per_layer, (conv_filter_size, conv_filter_size), activation='relu', padding='same')(conv_layer)
-		conv_layer = BatchNormalization()(conv_layer)
-		print(i, current_filters_per_layer)
-		
-		# again, devide the filters per layer by 2
-		current_filters_per_layer /= 2
-
-		# to satisfy the next loop, the current layer becomes the previous one
-		prev_conv_layer = conv_layer
-
-	# after the completion of the loop, apply an upsampling technique
-	upsampling = UpSampling2D((2,2))(prev_conv_layer)
-
-	print(current_filters_per_layer)
- 
-	# the last layer takes its input from the upsampling that we've performed
-	last_conv_layer = Conv2D(current_filters_per_layer, (conv_filter_size, conv_filter_size), activation='relu', padding='same')(upsampling)
-	last_conv_layer = BatchNormalization()(last_conv_layer)
-	last_conv_layer = Conv2D(current_filters_per_layer, (conv_filter_size, conv_filter_size), activation='relu', padding='same')(last_conv_layer)
-	last_conv_layer = BatchNormalization()(last_conv_layer)
-	
-	# apply one last time the upsampling technique
-	upsampling = UpSampling2D((2,2))(last_conv_layer)
-
-	# the decoded array is produced by applying 2d convolution one last time, this one with a sigmoid activation function
-	decoded = Conv2D(1, (conv_filter_size, conv_filter_size), activation='sigmoid', padding='same')(upsampling)
-
-	return decoded
-
+from Autoencoder.encoder import *
+from Autoencoder.decoder import *
 
 # Main function of the autoencoder
 """
@@ -145,42 +37,100 @@ the loss function results, until the user is satisfied by the output, and select
 to save that model for later usage.
 """
 def main():
-	# parse the file in order 
-	dataset = parse_X("train-images-idx3-ubyte")
+	# create a parser in order to obtain the arguments
+	parser = argparse.ArgumentParser(description='Create a NN for autoencoding a set of images')
+	# the oonly argument that we want is -d
+	parser.add_argument('-d', '--dataset', action='store', default=None,  metavar='', help='Relative path to the dataset')
+	# parse the arguments
+	args = parser.parse_args()
 
-	# get the hyperparameters from the user
-	conv_layers = 4 # input("Give the number of convolution layers")
-	conv_filter_size = 3 # input("Give the size of each convolution filter")
-	n_conv_filters_per_layer = 32 #input("Give the number of convolution filters per layer")
-	epochs = 5 #input("Give the number of epochs")
-	batch_size = 256 #input("Give the batch size")
-	
+	# parse the MNIST dataset and obtain its rows and columns
+	dataset, rows, columns = parse_X(args.dataset)
+
 	# define the shape of the images that we are going to use
-	from keras import Input
-	input_img = Input(shape=(28, 28, 1))
+	input_img = Input(shape=(rows, columns, 1))
 
-	# from keras.datasets import mnist
-	# (train_X, _), (valid_X, _) = mnist.load_data()
-
-	# the autoencoder is a keras model class, consisted of an encoder and a decoder
-	autoencoder = Model(input_img, decoder(encoder(input_img, conv_layers, conv_filter_size, n_conv_filters_per_layer)))
-	# compile the model
-	autoencoder.compile(loss='mean_squared_error', optimizer=RMSprop())
-	print("KOMPLE")
- 
-	# split the dataset in order to check the model's behaviour
-	train_X, valid_X, train_ground, valid_ground = train_test_split(dataset, dataset, test_size=0.95, random_state=42)
+	# # split the dataset in order to check the model's behaviour
+	train_X, valid_X, train_ground, valid_ground = train_test_split(dataset, dataset, test_size=0.2, random_state=13)
 	
-	#	normalize all values between 0 and 1 
+	# normalize all values between 0 and 1 
 	train_X = train_X.astype('float32') / 255.
 	valid_X = valid_X.astype('float32') / 255.
 	
 	# reshape the train and validation matrices into 28x28x1, due to an idiomorphy of the keras convolution.
-	train_X = np.reshape(train_X, (len(train_X), 28, 28, 1))
-	valid_X = np.reshape(valid_X, (len(valid_X), 28, 28, 1))
+	train_X = np.reshape(train_X, (len(train_X), rows, columns, 1))
+	valid_X = np.reshape(valid_X, (len(valid_X), rows, columns, 1))
 
-	# fit the problem in order to check its behaviour
-	auto_train = autoencoder.fit(train_X, train_X, batch_size=batch_size, epochs=epochs, validation_data=(valid_X, valid_X))
+	#boolean variable to exit the program
+	offside = False
+	# run until the user decides to break
+	while (offside == False):
+		# get the hyperparameters from the user
+		conv_layers = int(input("Give the number of convolution layers\n"))
+		conv_filter_size = int(input("Give the size of each convolution filter\n"))
+		n_conv_filters_per_layer = int(input("Give the number of convolution filters per layer\n"))
+		epochs = int(input("Give the number of epochs\n"))
+		batch_size = int(input("Give the batch size\n"))
+
+		print ("---TRYING TO RUN THE AUTOENCODER WITH THE FOLLOWING PARAMETERS: \nconv_layers ", conv_layers, \
+			"   conv_filter_size: ", conv_filter_size, "   n_conv_filters_per_layer: ", n_conv_filters_per_layer, \
+				"   epochs: ", epochs, "   batch_size: ", batch_size)
+		
+		try:
+			# the autoencoder is a keras model class, consisted of an encoder and a decoder
+			autoencoder = Model(input_img, decoder(encoder(input_img, conv_layers, conv_filter_size, n_conv_filters_per_layer)))
+
+			# compile the model
+			autoencoder.compile(loss='mean_squared_error', optimizer=RMSprop())
+
+			# visualize the layers that we've created using summary()
+			autoencoder.summary()
+
+			# fit the problem in order to check its behaviour
+			auto_train = autoencoder.fit(train_X, train_X, batch_size=batch_size, epochs=epochs, verbose=1, validation_data=(valid_X, valid_X))
+
+		except:
+			# an error has occured, but we dont want to exit the program
+			print("Chosen hyperparameters caused an error. Please select others")
+			
+		# ask the user for new input
+		while 1:
+			choice = int(input("Experiment completed! Choose one of the following options to procced: \n \
+							1 - Repeat the expirement with different hyperparameters\n \
+							2 - Print the plots gathered from the expirement\n \
+							3 - Save the model and exit\n"))
+			if (choice == 1):
+				break
+			elif (choice == 2):
+    			# gather info from the model's training process
+				loss = auto_train.history['loss']
+				val_loss = auto_train.history['val_loss']
+				# get the epochs as a list
+				epochs = range(epochs)
+				plt.figure()
+				# plot the loss functions
+				plt.plot(epochs, loss, 'b', label='Training loss')
+				plt.plot(epochs, val_loss, 'r', label='Validation loss')
+				# plot specifics
+				plt.title('Training and validation loss')
+				plt.legend()
+				# path to save the plot image
+				plot_path = "plots/plot_" + str(conv_layers) + "_" +  str(conv_filter_size) + "_" +  str(n_conv_filters_per_layer) +  ".png"
+				# save the image
+				plt.savefig(plot_path)
+				# show the plot in a pop-up
+				plt.show()
+				break
+			elif (choice == 3):
+    			# demand a datapath to save the model
+				path = input("Give the path and the name of the file to save the model")
+				autoencoder.save_weights(path)
+				# break the loop: model training is finished
+				offside = True
+				break
+			else:
+				print("Choose one of the default values")
+				continue
 
 
 # Main function of the autoencoder
