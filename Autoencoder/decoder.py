@@ -23,10 +23,13 @@ def decoder(encoder_result):
 
     # for the first n-1 layers of the decoder
     for i in range (0, decoding_layers - 1):
+        name1 = 'dec' + i + 'a'
+        name2 = 'dec' + i + 'b'
+        print(name1)
         # apply convolution and batch normalization 2 times
-        conv_layer = Conv2D(current_filters_per_layer, (conv_filter_size, conv_filter_size), activation='relu', padding='same')(prev_conv_layer)
+        conv_layer = Conv2D(current_filters_per_layer, (conv_filter_size, conv_filter_size), activation='relu', padding='same', name=name1)(prev_conv_layer)
         conv_layer = BatchNormalization()(conv_layer)
-        conv_layer = Conv2D(current_filters_per_layer, (conv_filter_size, conv_filter_size), activation='relu', padding='same')(conv_layer)
+        conv_layer = Conv2D(current_filters_per_layer, (conv_filter_size, conv_filter_size), activation='relu', padding='same', name=name2)(conv_layer)
         conv_layer = BatchNormalization()(conv_layer)
         print(i, current_filters_per_layer)
         
@@ -37,21 +40,20 @@ def decoder(encoder_result):
         prev_conv_layer = conv_layer
 
     # after the completion of the loop, apply an upsampling technique
-    upsampling = UpSampling2D((2,2))(prev_conv_layer)
+    upsampling = UpSampling2D((2,2), name='dec_last_1')(prev_conv_layer)
 
-    print(current_filters_per_layer)
 
     # the last layer takes its input from the upsampling that we've performed
-    last_conv_layer = Conv2D(current_filters_per_layer, (conv_filter_size, conv_filter_size), activation='relu', padding='same')(upsampling)
+    last_conv_layer = Conv2D(current_filters_per_layer, (conv_filter_size, conv_filter_size), activation='relu', padding='same', name='dec_last_2')(upsampling)
     last_conv_layer = BatchNormalization()(last_conv_layer)
-    last_conv_layer = Conv2D(current_filters_per_layer, (conv_filter_size, conv_filter_size), activation='relu', padding='same')(last_conv_layer)
+    last_conv_layer = Conv2D(current_filters_per_layer, (conv_filter_size, conv_filter_size), activation='relu', padding='same', name='dec_last_3')(last_conv_layer)
     last_conv_layer = BatchNormalization()(last_conv_layer)
 
     # apply one last time the upsampling technique
-    upsampling = UpSampling2D((2,2))(last_conv_layer)
+    upsampling = UpSampling2D((2,2), name='dec_last_4')(last_conv_layer)
 
     # the decoded array is produced by applying 2d convolution one last time, this one with a sigmoid activation function
-    decoded = Conv2D(1, (conv_filter_size, conv_filter_size), activation='sigmoid', padding='same')(upsampling)
+    decoded = Conv2D(1, (conv_filter_size, conv_filter_size), name='dec_last_5', activation='sigmoid', padding='same')(upsampling)
 
     return decoded
 

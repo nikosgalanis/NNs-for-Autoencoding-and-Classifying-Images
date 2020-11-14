@@ -26,9 +26,9 @@ FUNCTION USAGE: The user gives the desired hyperparameters as following:
 def encoder(input_image, conv_layers, conv_filter_size, n_conv_filters_per_layer):
 
 	# first layer: differs because it takes as input the shape of the image
-	first_layer = Conv2D(n_conv_filters_per_layer, (conv_filter_size, conv_filter_size), activation='relu', padding='same')(input_image)
+	first_layer = Conv2D(n_conv_filters_per_layer, (conv_filter_size, conv_filter_size), activation='relu', padding='same', name='enc0a')(input_image)
 	first_layer = BatchNormalization()(first_layer)
-	first_layer = Conv2D(n_conv_filters_per_layer, (conv_filter_size, conv_filter_size), activation='relu', padding='same')(first_layer)
+	first_layer = Conv2D(n_conv_filters_per_layer, (conv_filter_size, conv_filter_size), activation='relu', padding='same', name='enc0b')(first_layer)
 	first_layer = BatchNormalization()(first_layer)
 
 	# pooling after first layer
@@ -42,21 +42,24 @@ def encoder(input_image, conv_layers, conv_filter_size, n_conv_filters_per_layer
 
 	# for the remaining encoding layers
 	for i in range (1, encoding_layers):
+		name1 = 'enc' + i + 'a'
+		name2 = 'enc' + i + 'b'
+		name3 = 'enc' + i + 'c'
+		print(name1)
 		# the first 2 take an input from the pooling
 		if (i == 1 or i == 2):
-			conv_layer = Conv2D(current_filters_per_layer, (conv_filter_size, conv_filter_size), activation='relu', padding='same')(pool)
+			conv_layer = Conv2D(current_filters_per_layer, (conv_filter_size, conv_filter_size), name=name1, activation='relu', padding='same')(pool)
 		# the others from the previous convolution layer
 		else:
-			conv_layer = Conv2D(current_filters_per_layer, (conv_filter_size, conv_filter_size), activation='relu', padding='same')(conv_layer)
+			conv_layer = Conv2D(current_filters_per_layer, (conv_filter_size, conv_filter_size), name=name1, activation='relu', padding='same')(conv_layer)
 
 		# after that, wy apply batch normalization, convolution and the again batch normalization
 		conv_layer = BatchNormalization()(conv_layer)
-		conv_layer = Conv2D(current_filters_per_layer, (conv_filter_size, conv_filter_size), activation='relu', padding='same')(conv_layer)
+		conv_layer = Conv2D(current_filters_per_layer, (conv_filter_size, conv_filter_size), name=name2, activation='relu', padding='same')(conv_layer)
 		conv_layer = BatchNormalization()(conv_layer)
-		print(i, current_filters_per_layer)
 		# on the 1st layer in the loop(aka the 2nd), we want pooling
 		if (i == 1):
-			pool = MaxPooling2D(pool_size=(2,2))(conv_layer)
+			pool = MaxPooling2D(pool_size=(2,2), name=name3)(conv_layer)
 		# each time (except the last one, we multiply the filters per layer by 2)
 		if (i < encoding_layers - 1):
 			current_filters_per_layer *= 2
