@@ -23,8 +23,8 @@ def decoder(encoder_result):
 
     # for the first n-1 layers of the decoder
     for i in range (0, decoding_layers - 1):
-        name1 = 'dec' + i + 'a'
-        name2 = 'dec' + i + 'b'
+        name1 = 'dec' + str(i) + 'a'
+        name2 = 'dec' + str(i) + 'b'
         print(name1)
         # apply convolution and batch normalization 2 times
         conv_layer = Conv2D(current_filters_per_layer, (conv_filter_size, conv_filter_size), activation='relu', padding='same', name=name1)(prev_conv_layer)

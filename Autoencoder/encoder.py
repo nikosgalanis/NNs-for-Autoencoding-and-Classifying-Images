@@ -42,9 +42,9 @@ def encoder(input_image, conv_layers, conv_filter_size, n_conv_filters_per_layer
 
 	# for the remaining encoding layers
 	for i in range (1, encoding_layers):
-		name1 = 'enc' + i + 'a'
-		name2 = 'enc' + i + 'b'
-		name3 = 'enc' + i + 'c'
+		name1 = 'enc' + str(i) + 'a'
+		name2 = 'enc' + str(i) + 'b'
+		name3 = 'enc' + str(i) + 'c'
 		print(name1)
 		# the first 2 take an input from the pooling
 		if (i == 1 or i == 2):
