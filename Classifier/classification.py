@@ -57,7 +57,7 @@ def fully_connected(endoder, n_neurons):
 def main():
 	# create a parser in order to obtain the arguments
 	parser = argparse.ArgumentParser(description='Create a an image classifier NN using a pre-trained encoder')
-	# the oonly argument that we want is -d
+	# the parse all the arguments needed from the program
 	parser.add_argument('-d', '--trainset', action='store', default=None,  metavar='', help='Relative path to the training set')
 	parser.add_argument('-dl', '--trainlabels', action='store', default=None,  metavar='', help='Relative path to the training labels')
 	parser.add_argument('-t', '--testset', action='store', default=None,  metavar='', help='Relative path to the test set')
@@ -67,13 +67,16 @@ def main():
 	# parse the arguments
 	args = parser.parse_args()
 
+	# parse the train and test datasets
 	train_X, rows, columns = parse_X(args.trainset)
 	train_Y = parse_Y(args.trainlabels)
 	test_X, _, _ = parse_X(args.testset)
 	test_Y = parse_Y(args.testlabels)
 
+	# convert the labels into categorical arrays, in order to classify
 	new_train_Y = to_categorical(train_Y)
 	new_test_Y = to_categorical(test_Y)
+
 	# normalize all values between 0 and 1 
 	train_X = train_X.astype('float32') / 255.
 	test_X = test_X.astype('float32') / 255.
@@ -82,24 +85,32 @@ def main():
 	train_X = np.reshape(train_X, (len(train_X), rows, columns, 1))
 	test_X = np.reshape(test_X, (len(test_X), rows, columns, 1))
 
+	# split the train set in order to have a set for validation of our classifier
 	train_X ,valid_X, train_ground, valid_ground = train_test_split(train_X, new_train_Y, test_size=0.2, random_state=42)
 
-
+	# load the autoencoder that was given as an argument
 	loaded_encoder = load_model(args.model)
-		
+	
+	# drop all the layers that belond to the encoder
 	while 1:
 		found = False
 		layers = loaded_encoder.layers
+		# parse the layers
 		for layer in layers:
+    		# if we find at least one decoder layer
 			if 'dec' in layer.name:
 				found = True
+		# pop it
 		if found:
 			loaded_encoder._layers.pop()
+		# if no decoding layer is found, break the loop
 		else:
 			break
 
+	# determine the shape of our inputs
 	input_img = Input(shape = (rows, columns, 1))
 	
+	# hold the loaded encoder for future references
 	encode = loaded_encoder(input_img)
 
 	# create an empty list in order to store the models
@@ -109,46 +120,62 @@ def main():
 			choice = int(input("Choose one of the following options to procced: \n \
 						1 - Repeat the expirement with different hyperparameters\n \
 						2 - Print the plots gathered from the expirement\n \
-						3 - Save the model and exit\n"))
+						3 - Predict the test set using one of the pretrained models and exit\n \
+						4 - Load a pre-trained classifier\n"))
 			if (choice == 1):
+    			# hyperparameters input
 				epochs = int(input("Give the number of epochs\n"))
 				batch_size = int(input("Give the batch size\n"))
 				fc_n_neurons = int(input("Give the number of neurons in the fully connected layer\n"))
 
+				# create the model concisting of the encoder and a fully connected layer
 				full_model = Model(input_img, fully_connected(encode, fc_n_neurons))
-				# 2 steps of training: 1st one, train only the fc layer
+
+				"""
+				In order to achieve better speed performance, we are going to train in 2 steps:
+				
+				 - 1st step: train only the FC layer
+				 - 2nd step: given the results of the 1st step, train the whole model
+				"""
+				# mark every other layer except of the dense as untrainable
 				for layer in full_model.layers:
 					if (layer.name not in "dense"):
 						layer.trainable = False
 
+				# compile the model
 				full_model.compile(loss=categorical_crossentropy, optimizer=Adam(),metrics=['accuracy'])
-				full_model.summary()
-		
+				
+				# and train it
 				classify_train = full_model.fit(train_X, train_ground, batch_size=batch_size, epochs=epochs, verbose=1, validation_data=(valid_X, valid_ground))
 
-				# # 2nd step, train every layer
+				# in the 2nd step, every layer is trainable
 				for layer in full_model.layers:
 					layer.trainable = True
 
+				# compile and train the model
 				full_model.compile(loss=categorical_crossentropy, optimizer=Adam(),metrics=['accuracy'])
 				
 				classify_train = full_model.fit(train_X, train_ground, batch_size=batch_size, epochs=epochs, verbose=1, validation_data=(valid_X, valid_ground))
 
+				# create a tuple of the model plus some info in order to save it to the models' list
 				model_plus_info = (full_model, epochs, batch_size, fc_n_neurons)
 				models_list.append(model_plus_info)
+				# TODO: Saving fails
 				name = str(epochs) + "_" + str(batch_size) + "_" + str(fc_n_neurons) + ".h5"
 
 				full_model.save(name, save_format='h5')
 
-
+			# Print stats for the last model and the models in general
 			elif (choice == 2):
-
+				# Get the last model from the list
 				model, epochs, batch_size, fc_n_neurons = models_list[-1]
-
+				
+				# plot the validation and the train accuracy and errors
 				accuracy = model.history.history['accuracy']
 				val_accuracy = model.history.history['val_accuracy']
 				loss = model.history.history['loss']
 				val_loss = model.history.history['val_loss']
+
 				epochs = range(len(accuracy))
 
 				plt.plot(epochs, accuracy, 'r', label='Training accuracy')
@@ -164,34 +191,44 @@ def main():
 				plt.show()
 
 				#TODO: plot ws pros tis yperparametrous
+			
+			# Predict the data and visualize it
 			elif (choice == 3):
 				print("Select the trained model that you want to use")
 				i = 0
+				# give the available models to the user as options
 				for (_, epochs, batch_size, fc_n_neurons) in models_list:
 					print(i, "- epochs: ", epochs, ", batchsize: ", batch_size, " n. neurons: ", fc_n_neurons, "\n")
 					i += 1
 				
+				# get the selection and load the appropriate model
 				selection = int(input())
 				model, _, _, _ = models_list[selection]
 
+				# run the evaluation
 				test_eval = model.evaluate(test_X, new_test_Y, verbose=0)
-
+				# print the metrics for the dataset
+				print("\n--------------- TEST SET METRICS ---------------\n")
 				print('Test loss:', test_eval[0])
 				print('Test accuracy:', test_eval[1])
 
-		
+				# print some of the images 
+				print("\n--------------- EXAMPLES OF PREDICTED IMAGES ---------------\n")
 				predicted_classes = model.predict(test_X)
 				predicted_classes = np.argmax(np.round(predicted_classes),axis=1)
-				
-				# Print some correctly predicted images
+
+				# get a list of the correctly computed images				
 				correct = np.where(predicted_classes==test_Y)[0]
 				print ("Found " ,len(correct), " correct labels")
+				# visualize the first nine
 				for i, correct in enumerate(correct[:9]):
 					plt.subplot(3,3,i+1)
+					# show the image
 					plt.imshow(test_X[correct].reshape(28,28), cmap='gray', interpolation='none')
 					plt.title("Predicted {}, Class {}".format(predicted_classes[correct], int(test_Y[correct])))
+					plt.axis('off')
 					plt.tight_layout()
-					plt.show()
+				plt.show()
 
 				# Print some incorrectly predicted images
 				incorrect = np.where(predicted_classes!=test_Y)[0]
@@ -200,12 +237,15 @@ def main():
 					plt.subplot(3,3,i+1)
 					plt.imshow(test_X[incorrect].reshape(28,28), cmap='gray', interpolation='none')
 					plt.title("Predicted {}, Class {}".format(predicted_classes[incorrect], int(test_Y[incorrect])))
+					plt.axis('off')
 					plt.tight_layout()
-					plt.show()
+				plt.show()
 
+				print("\n--------------- FULL CLASSIFICATION REPORT ---------------\n")
+				# print the classification report of the testing set for each class
 				target_names = ["Class {}".format(i) for i in range(10)]
 				print(classification_report(test_Y, predicted_classes, target_names=target_names))
-
+		# TODO: implement 4
 			else:
 				print("Choose one of the default values")
 
