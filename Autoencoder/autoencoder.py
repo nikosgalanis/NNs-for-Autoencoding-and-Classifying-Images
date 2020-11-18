@@ -10,6 +10,8 @@ from keras.models import Sequential
 from keras import Model
 from keras.optimizers import RMSprop
 
+from keras.models import load_model
+
 from sklearn.model_selection import train_test_split
 
 from keras.layers.convolutional import Conv2D
@@ -23,6 +25,7 @@ from matplotlib import pyplot as plt
 import tensorflow as tf
 
 from common.mnist_parser import *
+from common.utils import *
 
 from Autoencoder.encoder import *
 from Autoencoder.decoder import *
@@ -61,6 +64,8 @@ def main():
 	train_X = np.reshape(train_X, (len(train_X), rows, columns, 1))
 	valid_X = np.reshape(valid_X, (len(valid_X), rows, columns, 1))
 
+	# list to keep all of our models
+	models_list = []
 	#boolean variable to exit the program
 	offside = False
 	# run until the user decides to break
@@ -89,6 +94,9 @@ def main():
 
 			# fit the problem in order to check its behaviour
 			auto_train = autoencoder.fit(train_X, train_X, batch_size=batch_size, epochs=epochs, verbose=1, validation_data=(valid_X, valid_X))
+			# create a tuple of the model plus some info in order to save it to the models' list
+			model_plus_info = (autoencoder, conv_layers, conv_filter_size, n_conv_filters_per_layer, epochs, batch_size)
+			models_list.append(model_plus_info)
 
 		except:
 			# an error has occured, but we dont want to exit the program
@@ -99,7 +107,8 @@ def main():
 			choice = int(input("Experiment completed! Choose one of the following options to procced: \n \
 							1 - Repeat the expirement with different hyperparameters\n \
 							2 - Print the plots gathered from the expirement\n \
-							3 - Save the model and exit\n"))
+							3 - Save the model and exit\n \
+							4 - Load a pre-trained model\n"))
 			if (choice == 1):
 				break
 			elif (choice == 2):
@@ -129,10 +138,34 @@ def main():
 				# break the loop: model training is finished
 				offside = True
 				break
+			elif (choice == 4):
+				# Get the model info
+				path = input("Give the path and the name of the model you want to load")	
+				conv_layers = int(input("Give the number of convolutional layers that were used to train the model"))
+				conv_filter_size = int(input("Give the conv_filter_size that was used to train the model"))
+				n_conv_filters_per_layer = int(input("Give the number of convolution filters per layer that were used to train the model"))
+				epochs = int(input("Give the number of epochs that were used to train the model"))
+				batch_size = int(input("Give the batch size that was used to train the model"))
+				# load the pre-trained model
+				autoencoder = load_model(path)
+				# collect the info in the tuple
+				model_plus_info = (autoencoder, conv_layers, conv_filter_size, n_conv_filters_per_layer, epochs, batch_size)
+				# append the model in the models' list
+				models_list.append(model_plus_info)
 			else:
 				print("Choose one of the default values")
 				continue
 
+
+"""
+
+[a, b, c] -> [10,20,30]
+
+[d, e, f] -> [10,20,40]
+
+plot(x:epochs, y: error)
+
+"""
 
 # Main function of the autoencoder
 if __name__ == "__main__":

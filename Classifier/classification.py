@@ -40,6 +40,7 @@ from sklearn.metrics import classification_report
 
 
 from common.mnist_parser import *
+from common.utils import *
 from Autoencoder.encoder import *
 from Autoencoder.decoder import *
 
@@ -169,7 +170,10 @@ def main():
 			elif (choice == 2):
 				# Get the last model from the list
 				model, epochs, batch_size, fc_n_neurons = models_list[-1]
-				
+				# create a subplot to plot the accuracy and the loss
+				fig, (ax1, ax2) = plt.subplots(1, 2)
+				fig.suptitle('Last model metrics')
+
 				# plot the validation and the train accuracy and errors
 				accuracy = model.history.history['accuracy']
 				val_accuracy = model.history.history['val_accuracy']
@@ -178,19 +182,40 @@ def main():
 
 				epochs = range(len(accuracy))
 
-				plt.plot(epochs, accuracy, 'r', label='Training accuracy')
-				plt.plot(epochs, val_accuracy, 'b', label='Validation accuracy')
-				plt.title('Training and validation accuracy')
-				plt.legend()
-				plt.figure()
+				ax1.plot(epochs, accuracy, 'r', label='Training accuracy')
+				ax1.plot(epochs, val_accuracy, 'b', label='Validation accuracy')
+				ax1.title('Training and validation accuracy')
+				ax1.legend()
+				ax1.figure()
 
-				plt.plot(epochs, loss, 'r', label='Training loss')
-				plt.plot(epochs, val_loss, 'b', label='Validation loss')
-				plt.title('Training and validation loss')
-				plt.legend()
-				plt.show()
+				ax2.plot(epochs, loss, 'r', label='Training loss')
+				ax2.plot(epochs, val_loss, 'b', label='Validation loss')
+				ax2.title('Training and validation loss')
+				ax2.legend()
 
-				#TODO: plot ws pros tis yperparametrous
+				fig.show()
+
+				# Plot the difference between all the previously loadad models
+				for model_1 in models_list:
+					for model_2 in models_list:
+						if (model_1 != model_2):
+							first_model = model_1[1:]
+							second_model = model_2[1:]
+
+							diff, hyperparameter = list_difference(first_model,second_model)
+							if (diff == 1):
+								if (hyperparameter == 0):
+									name = 'Epochs'
+								elif (hyperparameter == 1):
+									name = 'Batch Size'
+								else:
+									name = 'Number of neurons'
+								
+								#model_plus_info = (full_model, epochs, batch_size, fc_n_neurons)
+
+								#plot
+
+    							
 			
 			# Predict the data and visualize it
 			elif (choice == 3):
@@ -245,7 +270,21 @@ def main():
 				# print the classification report of the testing set for each class
 				target_names = ["Class {}".format(i) for i in range(10)]
 				print(classification_report(test_Y, predicted_classes, target_names=target_names))
-		# TODO: implement 4
+
+				# exit the program
+				break;
+			elif (choice == 4):
+				# Get the model info
+				path = int(input("Give the path and the name of the model you want to load"))	
+				epochs = int(input("Give the number of epochs that were used to train the model"))
+				batch_size = int(input("Give the batch size that was used to train the model"))
+				fc_n_neurons = int(input("Give the number of neurons that were used to train the model"))
+				# load the pre-trained model
+				loaded_model = load_model(path)
+				# collect the info in the tuple
+				model_plus_info = (full_model, epochs, batch_size, fc_n_neurons)
+				# append the model in the models' list
+				models_list.append(model_plus_info)
 			else:
 				print("Choose one of the default values")
 
