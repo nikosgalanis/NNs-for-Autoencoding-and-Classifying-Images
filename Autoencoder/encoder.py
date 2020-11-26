@@ -67,6 +67,6 @@ def encoder(input_image, conv_layers, conv_filter_size, n_conv_filters_per_layer
 		if (i < encoding_layers - 1):
 			current_filters_per_layer *= 2
 
-	dropout = Dropout(0.5, name="enc_dropout")(conv_layer)
+	dropout = Dropout(0.3, name="enc_dropout")(conv_layer)
 	# return a tuple containing all the usefull info that we gathered from the encoder
 	return (dropout, encoding_layers, conv_filter_size, current_filters_per_layer)

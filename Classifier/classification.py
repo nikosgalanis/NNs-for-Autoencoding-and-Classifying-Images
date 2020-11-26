@@ -1,3 +1,9 @@
+try:
+	import hiplot as hip
+except:
+	install('hiplot')
+	import hiplot as hip
+	
 import argparse
 import sys
 
@@ -15,10 +21,8 @@ from keras.optimizers import Adam
 from keras.models import Sequential
 from keras.models import load_model
 
-
 from keras.layers.convolutional import Conv2D
 from keras.layers.normalization import BatchNormalization
-
 from keras.layers import MaxPooling2D
 from keras.layers import UpSampling2D
 from keras.layers import Flatten
@@ -26,11 +30,8 @@ from keras.layers import Dense
 from keras.layers import Dropout
 
 from keras.utils import to_categorical
-
 from keras.losses import categorical_crossentropy
-
 from keras import Input
-
 from keras.backend import flatten
 
 from matplotlib import pyplot as plt
@@ -38,12 +39,12 @@ from matplotlib import pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
 
-
 from common.mnist_parser import *
 from common.utils import *
 from Autoencoder.encoder import *
 from Autoencoder.decoder import *
 
+import webbrowser
 
 # Build the model, consisti
 def fully_connected(endoder, n_neurons):
@@ -117,9 +118,11 @@ def main():
 	# create an empty list in order to store the models
 	models_list = []
 
+	# counter for the plots, in order to save the fiels
+	plots = 0
 	while 1:
 			choice = int(input("Choose one of the following options to procced: \n \
-						1 - Repeat the expirement with different hyperparameters\n \
+						1 - Chose hyperparameters for the next model's training\n \
 						2 - Print the plots gathered from the expirement\n \
 						3 - Predict the test set using one of the pretrained models and exit\n \
 						4 - Load a pre-trained classifier\n"))
@@ -140,12 +143,11 @@ def main():
 				"""
 				# mark every other layer except of the dense as untrainable
 				for layer in full_model.layers:
-					if (layer.name not in "dense"):
+					if ("dense" not in layer.name):
 						layer.trainable = False
 
 				# compile the model
 				full_model.compile(loss=categorical_crossentropy, optimizer=Adam(),metrics=['accuracy'])
-				
 				# and train it
 				classify_train = full_model.fit(train_X, train_ground, batch_size=batch_size, epochs=epochs, verbose=1, validation_data=(valid_X, valid_ground))
 
@@ -158,77 +160,75 @@ def main():
 				
 				classify_train = full_model.fit(train_X, train_ground, batch_size=batch_size, epochs=epochs, verbose=1, validation_data=(valid_X, valid_ground))
 
-				# create a tuple of the model plus some info in order to save it to the models' list
-				model_plus_info = (full_model, epochs, batch_size, fc_n_neurons)
+				# create a dictionary of the model plus some info in order to save it to the models' list
+				model_plus_info = {'full_model': full_model, 'epochs': epochs, 'batch_size': batch_size, 'fully_connected_neurons': fc_n_neurons}
 				models_list.append(model_plus_info)
-				# TODO: Saving fails
-				name = str(epochs) + "_" + str(batch_size) + "_" + str(fc_n_neurons) + ".h5"
-
-				full_model.save(name, save_format='h5')
 
 			# Print stats for the last model and the models in general
 			elif (choice == 2):
+				print("\n--------------- LAST TRAINED MODEL METRICS ---------------\n")	
 				# Get the last model from the list
-				model, epochs, batch_size, fc_n_neurons = models_list[-1]
+				last_model = models_list[-1]
+				model = last_model["full_model"]
+				epochs = last_model["epochs"]
+
 				# create a subplot to plot the accuracy and the loss
-				fig, (ax1, ax2) = plt.subplots(1, 2)
-				fig.suptitle('Last model metrics')
 
 				# plot the validation and the train accuracy and errors
 				accuracy = model.history.history['accuracy']
 				val_accuracy = model.history.history['val_accuracy']
 				loss = model.history.history['loss']
 				val_loss = model.history.history['val_loss']
-
 				epochs = range(len(accuracy))
 
-				ax1.plot(epochs, accuracy, 'r', label='Training accuracy')
-				ax1.plot(epochs, val_accuracy, 'b', label='Validation accuracy')
-				ax1.title('Training and validation accuracy')
-				ax1.legend()
-				ax1.figure()
+				plt.plot(epochs,accuracy, label = 'training accuracy')
+				plt.plot(epochs, val_accuracy, label = 'validation accuracy')
+				plt.legend()
+				plt.show()
+		
+				plt.plot(epochs,loss,  label = 'training loss')
+				plt.plot(epochs,val_loss,  label = 'validation loss')
+				plt.legend()
+				plt.show()
 
-				ax2.plot(epochs, loss, 'r', label='Training loss')
-				ax2.plot(epochs, val_loss, 'b', label='Validation loss')
-				ax2.title('Training and validation loss')
-				ax2.legend()
+	
+				# Using hiPlot to create a high dimensional plot of our models' hyperparameters
 
-				fig.show()
+				print("High-dimenstional plots poped-out in Google Chrome")
+				# hold a list of all the models' data
+				plotting_dict_list = []
+				# for every model in the models list
+				for m in models_list:
+    				# hold the loss and the accuracy
+					m["loss"] = round(m['full_model'].history.history['loss'][-1], 4)
+					m["accuracy"] = round(m['full_model'].history.history['accuracy'][-1], 4)
+					# discard the model class
+					plotting_dict_list.append(dict(list(m.items())[1:]))
 
-				# Plot the difference between all the previously loadad models
-				for model_1 in models_list:
-					for model_2 in models_list:
-						if (model_1 != model_2):
-							first_model = model_1[1:]
-							second_model = model_2[1:]
-
-							diff, hyperparameter = list_difference(first_model,second_model)
-							if (diff == 1):
-								if (hyperparameter == 0):
-									name = 'Epochs'
-								elif (hyperparameter == 1):
-									name = 'Batch Size'
-								else:
-									name = 'Number of neurons'
-								
-								#model_plus_info = (full_model, epochs, batch_size, fc_n_neurons)
-
-								#plot
-
-    							
+				# get the result of hiplot in an html page
+				html_str = hip.Experiment.from_iterable(plotting_dict_list).to_html(force_full_width=True)
+				# open a file to save the html containing the plot 
+				f_name = "hiplot_result_" + str(plots) + '.html'
+				# increase the plot variable
+				plots += 1
+				f = open(f_name, "w")
+				f.write(html_str)
+				f.close()
+				# pop-up in google chrome
+				webbrowser.get('/usr/bin/google-chrome %s').open(f_name)						
 			
 			# Predict the data and visualize it
 			elif (choice == 3):
 				print("Select the trained model that you want to use")
 				i = 0
 				# give the available models to the user as options
-				for (_, epochs, batch_size, fc_n_neurons) in models_list:
-					print(i, "- epochs: ", epochs, ", batchsize: ", batch_size, " n. neurons: ", fc_n_neurons, "\n")
+				for model in models_list:
+					print(i, "- epochs: ", model['epochs'], ", batchsize: ", model['batch_size'], " n. neurons: ", model['fully_connected_neurons'], "\n")
 					i += 1
 				
 				# get the selection and load the appropriate model
 				selection = int(input())
-				model, _, _, _ = models_list[selection]
+				model = models_list[selection]["full_model"]
 
 				# run the evaluation
 				test_eval = model.evaluate(test_X, new_test_Y, verbose=0)
@@ -276,18 +276,17 @@ def main():
 			elif (choice == 4):
 				# Get the model info
 				path = int(input("Give the path and the name of the model you want to load"))	
-				epochs = int(input("Give the number of epochs that were used to train the model"))
+				epochs = int(input("Give the number of epochs t\hat were used to train the model"))
 				batch_size = int(input("Give the batch size that was used to train the model"))
 				fc_n_neurons = int(input("Give the number of neurons that were used to train the model"))
 				# load the pre-trained model
 				loaded_model = load_model(path)
-				# collect the info in the tuple
-				model_plus_info = (full_model, epochs, batch_size, fc_n_neurons)
+				# collect the info in the dictionary
+				model_plus_info = {'full_model': loaded_model, 'epochs': epochs, 'batch_size': batch_size, 'fully_connected_neurons': fc_n_neurons}
 				# append the model in the models' list
 				models_list.append(model_plus_info)
 			else:
 				print("Choose one of the default values")
-
 
 if __name__ == '__main__':
 	main()
