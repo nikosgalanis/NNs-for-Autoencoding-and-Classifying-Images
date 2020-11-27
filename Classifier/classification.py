@@ -1,8 +1,3 @@
-try:
-	import hiplot as hip
-except:
-	install('hiplot')
-	import hiplot as hip
 	
 import argparse
 import sys
@@ -45,6 +40,12 @@ from Autoencoder.encoder import *
 from Autoencoder.decoder import *
 
 import webbrowser
+
+try:
+	import hiplot as hip
+except:
+	install('hiplot')
+	import hiplot as hip
 
 # Build the model, consisti
 def fully_connected(endoder, n_neurons):
@@ -193,29 +194,32 @@ def main():
 
 	
 				# Using hiPlot to create a high dimensional plot of our models' hyperparameters
+				if (len(models_list) > 1):
+					print("High-dimenstional plots poped-out in Google Chrome")
+					# hold a list of all the models' data
+					plotting_dict_list = []
+					# for every model in the models list
+					for m in models_list:
+						# hold the loss and the accuracy
+						m["loss"] = round(m['full_model'].history.history['loss'][-1], 4)
+						m["accuracy"] = round(m['full_model'].history.history['accuracy'][-1], 4)
+						# discard the model class
+						plotting_dict_list.append(dict(list(m.items())[1:]))
 
-				print("High-dimenstional plots poped-out in Google Chrome")
-				# hold a list of all the models' data
-				plotting_dict_list = []
-				# for every model in the models list
-				for m in models_list:
-    				# hold the loss and the accuracy
-					m["loss"] = round(m['full_model'].history.history['loss'][-1], 4)
-					m["accuracy"] = round(m['full_model'].history.history['accuracy'][-1], 4)
-					# discard the model class
-					plotting_dict_list.append(dict(list(m.items())[1:]))
-
-				# get the result of hiplot in an html page
-				html_str = hip.Experiment.from_iterable(plotting_dict_list).to_html(force_full_width=True)
-				# open a file to save the html containing the plot 
-				f_name = "hiplot_result_" + str(plots) + '.html'
-				# increase the plot variable
-				plots += 1
-				f = open(f_name, "w")
-				f.write(html_str)
-				f.close()
-				# pop-up in google chrome
-				webbrowser.get('/usr/bin/google-chrome %s').open(f_name)						
+					# get the result of hiplot in an html page
+					html_str = hip.Experiment.from_iterable(plotting_dict_list).to_html(force_full_width=True)
+					# open a file to save the html containing the plot 
+					f_name = "hiplot_result_" + str(plots) + '.html'
+					# increase the plot variable
+					plots += 1
+					f = open(f_name, "w")
+					f.write(html_str)
+					f.close()
+					# pop-up in google chrome
+					webbrowser.get('/usr/bin/google-chrome %s').open(f_name)
+				else:
+					print(len(models_list))
+					print("There is only one model, train an other one too to compare...\n")						
 			
 			# Predict the data and visualize it
 			elif (choice == 3):
