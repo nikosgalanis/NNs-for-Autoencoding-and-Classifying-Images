@@ -94,33 +94,16 @@ def main():
 	# load the autoencoder that was given as an argument
 	loaded_encoder = load_model(args.model)
 	
-	# drop all the layers that belond to the encoder
-	while 1:
-		found = False
-		layers = loaded_encoder.layers
-		# parse the layers
-		for layer in layers:
-    		# if we find at least one decoder layer
-			if 'dec' in layer.name:
-				found = True
-		# pop it
-		if found:
-			loaded_encoder._layers.pop()
-		# if no decoding layer is found, break the loop
-		else:
+	layers = loaded_encoder.layers
+	for idx, layer in enumerate(layers):
+		if (layer.name == 'enc_dropout'):
 			break
-
-	# determine the shape of our inputs
-	input_img = Input(shape = (rows, columns, 1))
 	
-	# hold the loaded encoder for future references
-	encode = loaded_encoder(input_img)
-
+	input_img = Input(shape = (rows, columns, 1))
 	# create an empty list in order to store the models
 	models_list = []
-
-	# counter for the plots, in order to save the fiels
 	plots = 0
+
 	while 1:
 			choice = int(input("Choose one of the following options to procced: \n \
 						1 - Chose hyperparameters for the next model's training\n \
@@ -128,14 +111,17 @@ def main():
 						3 - Predict the test set using one of the pretrained models and exit\n \
 						4 - Load a pre-trained classifier\n"))
 			if (choice == 1):
-    			# hyperparameters input
+				# hyperparameters input
 				epochs = int(input("Give the number of epochs\n"))
 				batch_size = int(input("Give the batch size\n"))
 				fc_n_neurons = int(input("Give the number of neurons in the fully connected layer\n"))
 
 				# create the model concisting of the encoder and a fully connected layer
-				full_model = Model(input_img, fully_connected(encode, fc_n_neurons))
+				new_model = Model(loaded_encoder.inputs,loaded_encoder.layers[idx].output)
+				# new_model.summary()
 
+				encode = new_model(input_img)
+				full_model = Model(input_img, fully_connected(encode, fc_n_neurons))
 				"""
 				In order to achieve better speed performance, we are going to train in 2 steps:
 				
@@ -156,7 +142,7 @@ def main():
 				for layer in full_model.layers:
 					layer.trainable = True
 
-				# compile and train the model
+				# compile and train the49 model
 				full_model.compile(loss=categorical_crossentropy, optimizer=Adam(),metrics=['accuracy'])
 				
 				classify_train = full_model.fit(train_X, train_ground, batch_size=batch_size, epochs=epochs, verbose=1, validation_data=(valid_X, valid_ground))
@@ -164,10 +150,13 @@ def main():
 				# create a dictionary of the model plus some info in order to save it to the models' list
 				model_plus_info = {'full_model': full_model, 'epochs': epochs, 'batch_size': batch_size, 'fully_connected_neurons': fc_n_neurons}
 				models_list.append(model_plus_info)
+		
+				# create a file name and save the file
+				name = str(epochs) + "_" + str(batch_size) + "_" + str(fc_n_neurons) + ".h5"
+				full_model.save(name, save_format='h5')
 
 			# Print stats for the last model and the models in general
 			elif (choice == 2):
-				print("\n--------------- LAST TRAINED MODEL METRICS ---------------\n")	
 				# Get the last model from the list
 				last_model = models_list[-1]
 				model = last_model["full_model"]
@@ -175,52 +164,57 @@ def main():
 
 				# create a subplot to plot the accuracy and the loss
 
-				# plot the validation and the train accuracy and errors
 				accuracy = model.history.history['accuracy']
-				val_accuracy = model.history.history['val_accuracy']
-				loss = model.history.history['loss']
-				val_loss = model.history.history['val_loss']
-				epochs = range(len(accuracy))
+				if (len(accuracy) > 1):	
+					print("\n--------------- LAST TRAINED MODEL METRICS ----------------\n")	
+					# plot the validation and the train accuracy and errors
+					val_accuracy = model.history.history['val_accuracy']
+					loss = model.history.history['loss']
+					val_loss = model.history.history['val_loss']
+					epochs = range(len(accuracy))
 
-				plt.plot(epochs,accuracy, label = 'training accuracy')
-				plt.plot(epochs, val_accuracy, label = 'validation accuracy')
-				plt.legend()
-				plt.show()
-		
-				plt.plot(epochs,loss,  label = 'training loss')
-				plt.plot(epochs,val_loss,  label = 'validation loss')
-				plt.legend()
-				plt.show()
+					plt.plot(epochs,accuracy, label = 'training accuracy')
+					plt.plot(epochs, val_accuracy, label = 'validation accuracy')
+					plt.legend()
+					plt.ylim([0.9, 1])
 
-	
-				# Using hiPlot to create a high dimensional plot of our models' hyperparameters
+					plt.show()
+			
+					plt.plot(epochs,loss,  label = 'training loss')
+					plt.plot(epochs,val_loss,  label = 'validation loss')
+					plt.legend()
+					plt.ylim([0, 0.2])
+			
+					plt.show()
+				else: 
+					print("Last model was loaded. Not enough data to plot")
+
 				if (len(models_list) > 1):
-					print("High-dimenstional plots poped-out in Google Chrome")
-					# hold a list of all the models' data
+					print("\n--------------- ALL TRAINED MODElS METRICS-----------------\n")	
+					"""
+					Using hiPlot to create a high dimensional plot of our models' hyperparameters
+					"""
 					plotting_dict_list = []
-					# for every model in the models list
 					for m in models_list:
-						# hold the loss and the accuracy
 						m["loss"] = round(m['full_model'].history.history['loss'][-1], 4)
 						m["accuracy"] = round(m['full_model'].history.history['accuracy'][-1], 4)
-						# discard the model class
 						plotting_dict_list.append(dict(list(m.items())[1:]))
 
-					# get the result of hiplot in an html page
-					html_str = hip.Experiment.from_iterable(plotting_dict_list).to_html(force_full_width=True)
-					# open a file to save the html containing the plot 
-					f_name = "hiplot_result_" + str(plots) + '.html'
-					# increase the plot variable
-					plots += 1
-					f = open(f_name, "w")
-					f.write(html_str)
-					f.close()
-					# pop-up in google chrome
-					webbrowser.get('/usr/bin/google-chrome %s').open(f_name)
+    					# get the result of hiplot in an html page
+						html_str = hip.Experiment.from_iterable(plotting_dict_list).to_html(force_full_width=True)
+						# open a file to save the html containing the plot 
+						f_name = "../Results/hiplots/hiplot_result_" + str(plots) + '.html'
+						# increase the plot variable
+						plots += 1
+						f = open(f_name, "w")
+						f.write(html_str)
+						f.close()
+						# pop-up in google chrome
+						webbrowser.get('/usr/bin/google-chrome %s').open(f_name)
 				else:
 					print(len(models_list))
-					print("There is only one model, train an other one too to compare...\n")						
-			
+					print("There is only one model, train an other one too to compare...\n")
+
 			# Predict the data and visualize it
 			elif (choice == 3):
 				print("Select the trained model that you want to use")
@@ -279,12 +273,15 @@ def main():
 				break;
 			elif (choice == 4):
 				# Get the model info
-				path = int(input("Give the path and the name of the model you want to load"))	
-				epochs = int(input("Give the number of epochs t\hat were used to train the model"))
+				path = input("Give the path and the name of the model you want to load")
+				epochs = int(input("Give the number of epochs that were used to train the model"))
 				batch_size = int(input("Give the batch size that was used to train the model"))
 				fc_n_neurons = int(input("Give the number of neurons that were used to train the model"))
 				# load the pre-trained model
 				loaded_model = load_model(path)
+				loaded_model.compile(loss=categorical_crossentropy, optimizer=Adam(),metrics=['accuracy'])
+				
+				classify_train = loaded_model.fit(train_X, train_ground, batch_size=batch_size, epochs=1, verbose=1, validation_data=(valid_X, valid_ground))
 				# collect the info in the dictionary
 				model_plus_info = {'full_model': loaded_model, 'epochs': epochs, 'batch_size': batch_size, 'fully_connected_neurons': fc_n_neurons}
 				# append the model in the models' list

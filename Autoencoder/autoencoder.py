@@ -37,6 +37,9 @@ except:
 	install('hiplot')
 	import hiplot as hip
 
+
+import webbrowser
+
 # Main function of the autoencoder
 """
 FUNCTION USAGE: The main function is given a path of a file containing the 
@@ -124,75 +127,76 @@ def main():
 			if (choice == 1):
 				break
 			elif (choice == 2):
-				print("\n------------------TRAINED MODEL METRICS----------------------")
-		
-				# Loss plot
-				plt.figure()
-				plt.xlabel('Epochs')
-				plt.ylabel('MSE loss')
-				title = print(" Training/validation loss iconv_layers: " + str(conv_layers) + \
-					" conv_filter_size: " + str(conv_filter_size) + \
-					" n_conv_filters_per_layer: " + str(n_conv_filters_per_layer) + \
-					" epochs: " + str(epochs) + " batch_size: " + str(batch_size))
-				plt.title(title)
-				plt.plot(auto_train.history['loss'], label = 'Training loss')
-				plt.plot(auto_train.history['val_loss'], label = 'Validation loss')
-				plt.legend(loc="upper right")
-				plt.legend()
-				# path to save the plot image
-				plot_path = "loss_plot_" + str(conv_layers) + "_" +  str(conv_filter_size) + "_" +  str(n_conv_filters_per_layer) +  ".png"
-				# save the image
-				plt.savefig(plot_path)
-				plt.show()
+				if (len(models_list) > 0):
+					print("\n------------------TRAINED MODEL METRICS----------------------")
+			
+					# Loss plot
+					plt.figure()
+					plt.xlabel('Epochs')
+					plt.ylabel('MSE loss')
+					title = print(" Training/validation loss iconv_layers: " + str(conv_layers) + \
+						" conv_filter_size: " + str(conv_filter_size) + \
+						" n_conv_filters_per_layer: " + str(n_conv_filters_per_layer) + \
+						" epochs: " + str(epochs) + " batch_size: " + str(batch_size))
+					plt.title(title)
+					plt.plot(auto_train.history['loss'], label = 'Training loss')
+					plt.plot(auto_train.history['val_loss'], label = 'Validation loss')
+					plt.legend(loc="upper right")
+					plt.legend()
+					# path to save the plot image
+					plot_path = "loss_plot_" + str(conv_layers) + "_" +  str(conv_filter_size) + "_" +  str(n_conv_filters_per_layer) +  ".png"
+					# save the image
+					plt.savefig(plot_path)
+					plt.show()
 
-				# Accuracy plot
-				plt.figure()
-				plt.xlabel('Epochs')
-				plt.ylabel('MSE loss')
-				title = print(" Training/validation accuracy iconv_layers: " + str(conv_layers) + \
-									" conv_filter_size: " + str(conv_filter_size) + \
-									" n_conv_filters_per_layer: " + str(n_conv_filters_per_layer) + \
-									" epochs: " + str(epochs) + " batch_size: " + str(batch_size))
-				plt.title(title)
-				plt.plot(auto_train.history['accuracy'], label = 'Training accuracy')
-				plt.plot(auto_train.history['val_accuracy'], label = 'Validation accuracy')
-				plt.legend(loc="lower right")
-				plt.legend()
-				# path to save the plot image
-				plot_path = "accuracy_plot_" + str(conv_layers) + "_" +  str(conv_filter_size) + "_" +  str(n_conv_filters_per_layer) +  ".png"
-				# save the image
-				plt.savefig(plot_path)
-				plt.show()
-				
-				if (len(models_list) > 1):
-					print("\n--------------- ALL TRAINED MODElS METRICS-----------------\n")
-
-					"""
-					Using hiPlot to create a high dimensional plot of our models' hyperparameters
-					"""
-					plotting_dict_list = []
-					for m in models_list:
-						m["loss"] = round(m['full_model'].history.history['loss'][-1], 4)
-						m["accuracy"] = round(m['full_model'].history.history['accuracy'][-1], 4)
-						plotting_dict_list.append(dict(list(m.items())[1:]))
-
-
-					hip.Experiment.from_iterable(plotting_dict_list).display(force_full_width=True)
+					# Accuracy plot
+					plt.figure()
+					plt.xlabel('Epochs')
+					plt.ylabel('MSE loss')
+					title = print(" Training/validation accuracy iconv_layers: " + str(conv_layers) + \
+										" conv_filter_size: " + str(conv_filter_size) + \
+										" n_conv_filters_per_layer: " + str(n_conv_filters_per_layer) + \
+										" epochs: " + str(epochs) + " batch_size: " + str(batch_size))
+					plt.title(title)
+					plt.plot(auto_train.history['accuracy'], label = 'Training accuracy')
+					plt.plot(auto_train.history['val_accuracy'], label = 'Validation accuracy')
+					plt.legend(loc="lower right")
+					plt.legend()
+					# path to save the plot image
+					plot_path = "accuracy_plot_" + str(conv_layers) + "_" +  str(conv_filter_size) + "_" +  str(n_conv_filters_per_layer) +  ".png"
+					# save the image
+					plt.savefig(plot_path)
+					plt.show()
 					
-					# open a file to save the html containing the plot 
-					f_name = "hiplot_result_" + str(plots) + '.html'
-					# increase the plot variable
-					plots += 1
-					f = open(f_name, "w")
-					f.write(html_str)
-					f.close()
-					# pop-up in google chrome
-					webbrowser.get('/usr/bin/google-chrome %s').open(f_name)
-				else :
-					print(len(models_list))
-					print("There is only one model, train an other one too to compare...\n")
-				
-				continue
+					if (len(models_list) > 1):
+						print("\n--------------- ALL TRAINED MODElS METRICS-----------------\n")
+
+						"""
+						Using hiPlot to create a high dimensional plot of our models' hyperparameters
+						"""
+						plotting_dict_list = []
+						for m in models_list:
+							m["loss"] = round(m['full_model'].history.history['loss'][-1], 4)
+							m["accuracy"] = round(m['full_model'].history.history['accuracy'][-1], 4)
+							plotting_dict_list.append(dict(list(m.items())[1:]))
+
+
+						html_str = hip.Experiment.from_iterable(plotting_dict_list).to_html(force_full_width=True)
+						
+						# open a file to save the html containing the plot 
+						f_name = "hiplot_result_" + str(plots) + '.html'
+						# increase the plot variable
+						plots += 1
+						f = open(f_name, "w")
+						f.write(html_str)
+						f.close()
+						# pop-up in google chrome
+						webbrowser.get('/usr/bin/google-chrome %s').open(f_name)
+					else :
+						print(len(models_list))
+						print("There is only one model, train an other one too to compare...\n")
+					
+					continue
 			elif (choice == 3):
     			# demand a datapath to save the model
 				path = input("Give the path and the name of the file to save the model\n")
