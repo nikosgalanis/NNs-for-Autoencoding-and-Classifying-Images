@@ -1,0 +1,46 @@
+Give the number of epochs
+10
+Give the batch size
+32
+Give the number of neurons in the fully connected layer
+60
+Epoch 1/10
+1500/1500 [==============================] - 7s 5ms/step - loss: 0.0283 - accuracy: 0.9937 - val_loss: 0.0401 - val_accuracy: 0.9923
+Epoch 2/10
+1500/1500 [==============================] - 7s 5ms/step - loss: 0.0025 - accuracy: 0.9993 - val_loss: 0.0424 - val_accuracy: 0.9935
+Epoch 3/10
+1500/1500 [==============================] - 7s 4ms/step - loss: 0.0027 - accuracy: 0.9991 - val_loss: 0.0534 - val_accuracy: 0.9926
+Epoch 4/10
+1500/1500 [==============================] - 7s 4ms/step - loss: 0.0031 - accuracy: 0.9992 - val_loss: 0.0592 - val_accuracy: 0.9920
+Epoch 5/10
+1500/1500 [==============================] - 7s 5ms/step - loss: 0.0023 - accuracy: 0.9994 - val_loss: 0.0652 - val_accuracy: 0.9919
+Epoch 6/10
+1500/1500 [==============================] - 7s 5ms/step - loss: 0.0030 - accuracy: 0.9992 - val_loss: 0.0597 - val_accuracy: 0.9927
+Epoch 7/10
+1500/1500 [==============================] - 7s 5ms/step - loss: 0.0015 - accuracy: 0.9995 - val_loss: 0.0800 - val_accuracy: 0.9928
+Epoch 8/10
+1500/1500 [==============================] - 7s 5ms/step - loss: 0.0024 - accuracy: 0.9992 - val_loss: 0.0801 - val_accuracy: 0.9927
+Epoch 9/10
+1500/1500 [==============================] - 7s 5ms/step - loss: 0.0030 - accuracy: 0.9992 - val_loss: 0.0742 - val_accuracy: 0.9933
+Epoch 10/10
+1500/1500 [==============================] - 7s 5ms/step - loss: 0.0012 - accuracy: 0.9995 - val_loss: 0.0774 - val_accuracy: 0.9924
+Epoch 1/10
+1500/1500 [==============================] - 13s 9ms/step - loss: 0.0130 - accuracy: 0.9975 - val_loss: 0.0518 - val_accuracy: 0.9918
+Epoch 2/10
+1500/1500 [==============================] - 13s 9ms/step - loss: 0.0106 - accuracy: 0.9973 - val_loss: 0.0484 - val_accuracy: 0.9914
+Epoch 3/10
+1500/1500 [==============================] - 13s 9ms/step - loss: 0.0059 - accuracy: 0.9984 - val_loss: 0.0554 - val_accuracy: 0.9902
+Epoch 4/10
+1500/1500 [==============================] - 13s 9ms/step - loss: 0.0123 - accuracy: 0.9971 - val_loss: 0.0449 - val_accuracy: 0.9918
+Epoch 5/10
+1500/1500 [==============================] - 13s 9ms/step - loss: 0.0087 - accuracy: 0.9977 - val_loss: 0.0494 - val_accuracy: 0.9918
+Epoch 6/10
+1500/1500 [==============================] - 13s 9ms/step - loss: 0.0071 - accuracy: 0.9981 - val_loss: 0.0377 - val_accuracy: 0.9933
+Epoch 7/10
+1500/1500 [==============================] - 13s 9ms/step - loss: 0.0063 - accuracy: 0.9981 - val_loss: 0.0435 - val_accuracy: 0.9914
+Epoch 8/10
+1500/1500 [==============================] - 13s 9ms/step - loss: 0.0076 - accuracy: 0.9981 - val_loss: 0.0372 - val_accuracy: 0.9932
+Epoch 9/10
+1500/1500 [==============================] - 13s 9ms/step - loss: 0.0076 - accuracy: 0.9981 - val_loss: 0.0438 - val_accuracy: 0.9922
+Epoch 10/10
+1500/1500 [==============================] - 13s 9ms/step - loss: 0.0089 - accuracy: 0.9977 - val_loss: 0.0500 - val_accuracy: 0.9918
