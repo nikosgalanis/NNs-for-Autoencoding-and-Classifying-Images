@@ -1,0 +1,6 @@
+uid,from_uid,epochs,batch_size,convolution layers,convolution filter size ,number of conv. filters per layer,loss,accuracy
+0,,100,86,4,3,32,0.0016,0.8155
+1,,100,86,4,2,32,0.0028,0.8154
+2,,50,128,3,3,16,0.0039,0.8153
+3,,30,64,3,3,64,0.0013,0.8155
+4,,25,32,3,3,86,0.001,0.8155

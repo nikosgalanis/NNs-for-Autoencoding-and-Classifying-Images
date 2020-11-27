@@ -1,0 +1,52 @@
+_________________________________________________________________
+Epoch 1/25
+   1/1500 [..............................] - ETA: 0s - loss: 0.2944 - accuracy: 0.3671WARNING:tensorflow:Callbacks method `on_train_batch_end` is slow compared to the batch time (batch time: 0.0073s vs `on_train_batch_end` time: 0.0113s). Check your callbacks.
+1500/1500 [==============================] - 31s 21ms/step - loss: 0.0119 - accuracy: 0.8120 - val_loss: 0.0027 - val_accuracy: 0.8153
+Epoch 2/25
+1500/1500 [==============================] - 31s 21ms/step - loss: 0.0035 - accuracy: 0.8154 - val_loss: 0.0022 - val_accuracy: 0.8153
+Epoch 3/25
+1500/1500 [==============================] - 31s 20ms/step - loss: 0.0026 - accuracy: 0.8154 - val_loss: 0.0015 - val_accuracy: 0.8153
+Epoch 4/25
+1500/1500 [==============================] - 31s 21ms/step - loss: 0.0022 - accuracy: 0.8155 - val_loss: 0.0014 - val_accuracy: 0.8153
+Epoch 5/25
+1500/1500 [==============================] - 31s 20ms/step - loss: 0.0020 - accuracy: 0.8155 - val_loss: 0.0016 - val_accuracy: 0.8153
+Epoch 6/25
+1500/1500 [==============================] - 31s 21ms/step - loss: 0.0018 - accuracy: 0.8155 - val_loss: 0.0013 - val_accuracy: 0.8153
+Epoch 7/25
+1500/1500 [==============================] - 31s 21ms/step - loss: 0.0017 - accuracy: 0.8155 - val_loss: 0.0012 - val_accuracy: 0.8153
+Epoch 8/25
+1500/1500 [==============================] - 31s 21ms/step - loss: 0.0016 - accuracy: 0.8155 - val_loss: 0.0013 - val_accuracy: 0.8154
+Epoch 9/25
+1500/1500 [==============================] - 31s 20ms/step - loss: 0.0015 - accuracy: 0.8155 - val_loss: 9.4567e-04 - val_accuracy: 0.8153
+Epoch 10/25
+1500/1500 [==============================] - 31s 20ms/step - loss: 0.0014 - accuracy: 0.8155 - val_loss: 8.6878e-04 - val_accuracy: 0.8154
+Epoch 11/25
+1500/1500 [==============================] - 31s 20ms/step - loss: 0.0014 - accuracy: 0.8155 - val_loss: 7.9338e-04 - val_accuracy: 0.8154
+Epoch 12/25
+1500/1500 [==============================] - 31s 20ms/step - loss: 0.0013 - accuracy: 0.8155 - val_loss: 8.6332e-04 - val_accuracy: 0.8154
+Epoch 13/25
+1500/1500 [==============================] - 31s 20ms/step - loss: 0.0013 - accuracy: 0.8155 - val_loss: 8.1093e-04 - val_accuracy: 0.8153
+Epoch 14/25
+1500/1500 [==============================] - 31s 21ms/step - loss: 0.0012 - accuracy: 0.8155 - val_loss: 7.9039e-04 - val_accuracy: 0.8154
+Epoch 15/25
+1500/1500 [==============================] - 31s 21ms/step - loss: 0.0012 - accuracy: 0.8155 - val_loss: 6.9126e-04 - val_accuracy: 0.8154
+Epoch 16/25
+1500/1500 [==============================] - 31s 21ms/step - loss: 0.0012 - accuracy: 0.8155 - val_loss: 6.6209e-04 - val_accuracy: 0.8154
+Epoch 17/25
+1500/1500 [==============================] - 31s 21ms/step - loss: 0.0011 - accuracy: 0.8155 - val_loss: 7.4851e-04 - val_accuracy: 0.8154
+Epoch 18/25
+1500/1500 [==============================] - 31s 20ms/step - loss: 0.0011 - accuracy: 0.8155 - val_loss: 6.3935e-04 - val_accuracy: 0.8153
+Epoch 19/25
+1500/1500 [==============================] - 31s 20ms/step - loss: 0.0011 - accuracy: 0.8155 - val_loss: 6.5503e-04 - val_accuracy: 0.8154
+Epoch 20/25
+1500/1500 [==============================] - 31s 21ms/step - loss: 0.0011 - accuracy: 0.8155 - val_loss: 6.9901e-04 - val_accuracy: 0.8154
+Epoch 21/25
+1500/1500 [==============================] - 31s 21ms/step - loss: 0.0010 - accuracy: 0.8155 - val_loss: 6.1038e-04 - val_accuracy: 0.8154
+Epoch 22/25
+1500/1500 [==============================] - 31s 21ms/step - loss: 0.0010 - accuracy: 0.8155 - val_loss: 5.6564e-04 - val_accuracy: 0.8154
+Epoch 23/25
+1500/1500 [==============================] - 31s 21ms/step - loss: 9.9572e-04 - accuracy: 0.8155 - val_loss: 6.0356e-04 - val_accuracy: 0.8153
+Epoch 24/25
+1500/1500 [==============================] - 31s 21ms/step - loss: 9.7743e-04 - accuracy: 0.8155 - val_loss: 6.3631e-04 - val_accuracy: 0.8154
+Epoch 25/25
+1500/1500 [==============================] - 31s 20ms/step - loss: 9.6138e-04 - accuracy: 0.8155 - val_loss: 5.6602e-04 - val_accuracy: 0.8154
