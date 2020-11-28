@@ -152,7 +152,7 @@ def main():
 				models_list.append(model_plus_info)
 		
 				# create a file name and save the file
-				name = str(epochs) + "_" + str(batch_size) + "_" + str(fc_n_neurons) + ".h5"
+				name = "../Models/Classifier/" + str(epochs) + "_" + str(batch_size) + "_" + str(fc_n_neurons) + ".h5"
 				full_model.save(name, save_format='h5')
 
 			# Print stats for the last model and the models in general
@@ -212,7 +212,6 @@ def main():
 						# pop-up in google chrome
 						webbrowser.get('/usr/bin/google-chrome %s').open(f_name)
 				else:
-					print(len(models_list))
 					print("There is only one model, train an other one too to compare...\n")
 
 			# Predict the data and visualize it

@@ -33,7 +33,6 @@ from Autoencoder.decoder import *
 try:
 	import hiplot as hip
 except:
-	# pip install hiplot
 	install('hiplot')
 	import hiplot as hip
 

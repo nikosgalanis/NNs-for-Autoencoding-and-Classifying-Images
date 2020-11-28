@@ -1,7 +1,5 @@
-import pip
+import subprocess
+import sys
 
 def install(package):
-    if hasattr(pip, 'main'):
-        pip.main(['install', package])
-    else:
-        pip._internal.main(['install', package])
+    subprocess.check_call([sys.executable, "-m", "pip", "install", package])
