@@ -20,6 +20,8 @@ from keras.layers import MaxPooling2D
 from keras.layers import UpSampling2D
 from keras import Input
 
+from keras.models import load_model
+
 from matplotlib import pyplot as plt
 
 import tensorflow as tf
@@ -97,15 +99,10 @@ def main():
 
 			# compile the model
 			# theory has shown that the best optimizer for the mnist dataset is the following
-			autoencoder.compile(loss='categorical_crossentropy', optimizer = RMSprop(lr=0.001, rho=0.9, epsilon=1e-08, decay=0.0))
-
-			# visualize the layers that we've created using summary()
-			autoencoder.summary()
+			autoencoder.compile(loss='mean_squared_error', optimizer = RMSprop(lr=0.001, rho=0.9, epsilon=1e-08, decay=0.0), metrics=['accuracy'])
 
 			# fit the problem in order to check its behaviour
 			auto_train = autoencoder.fit(train_X, train_X, batch_size=batch_size, epochs=epochs, verbose=1, validation_data=(valid_X, valid_X))
-			# create a tuple of the model plus some info in order to save it to the models' list
-			# model_plus_info = (autoencoder, conv_layers, conv_filter_size, n_conv_filters_per_layer, epochs, batch_size)
 			# create a dictionary of the model plus some info in order to save it to the models' list
 			model_plus_info = {'full_model': autoencoder, 'epochs': epochs, 'batch_size': batch_size,\
 								'convolution layers': conv_layers, 'convolution filter size ': conv_filter_size,\
@@ -127,45 +124,55 @@ def main():
 				break
 			elif (choice == 2):
 				if (len(models_list) > 0):
-					print("\n------------------TRAINED MODEL METRICS----------------------")
-			
-					# Loss plot
-					plt.figure()
-					plt.xlabel('Epochs')
-					plt.ylabel('MSE loss')
-					title = print(" Training/validation loss iconv_layers: " + str(conv_layers) + \
-						" conv_filter_size: " + str(conv_filter_size) + \
-						" n_conv_filters_per_layer: " + str(n_conv_filters_per_layer) + \
-						" epochs: " + str(epochs) + " batch_size: " + str(batch_size))
-					plt.title(title)
-					plt.plot(auto_train.history['loss'], label = 'Training loss')
-					plt.plot(auto_train.history['val_loss'], label = 'Validation loss')
-					plt.legend(loc="upper right")
-					plt.legend()
-					# path to save the plot image
-					plot_path = "loss_plot_" + str(conv_layers) + "_" +  str(conv_filter_size) + "_" +  str(n_conv_filters_per_layer) +  ".png"
-					# save the image
-					plt.savefig(plot_path)
-					plt.show()
+					# Get the last model from the list
+					last_model = models_list[-1]
+					model = last_model["full_model"]
+					batch_size = last_model["batch_size"]
+					conv_layers = last_model["convolution layers"]
+					conv_filter_size = last_model["convolution filter size "]
+					n_conv_filters_per_layer = last_model["number of conv. filters per layer"]
 
-					# Accuracy plot
-					plt.figure()
-					plt.xlabel('Epochs')
-					plt.ylabel('MSE loss')
-					title = print(" Training/validation accuracy iconv_layers: " + str(conv_layers) + \
-										" conv_filter_size: " + str(conv_filter_size) + \
-										" n_conv_filters_per_layer: " + str(n_conv_filters_per_layer) + \
-										" epochs: " + str(epochs) + " batch_size: " + str(batch_size))
-					plt.title(title)
-					plt.plot(auto_train.history['accuracy'], label = 'Training accuracy')
-					plt.plot(auto_train.history['val_accuracy'], label = 'Validation accuracy')
-					plt.legend(loc="lower right")
-					plt.legend()
-					# path to save the plot image
-					plot_path = "accuracy_plot_" + str(conv_layers) + "_" +  str(conv_filter_size) + "_" +  str(n_conv_filters_per_layer) +  ".png"
-					# save the image
-					plt.savefig(plot_path)
-					plt.show()
+					accuracy = model.history.history['accuracy']
+					if len(accuracy) > 1:
+						print("\n------------------TRAINED MODEL METRICS----------------------")
+				
+						# Loss plot
+						plt.figure()
+						plt.xlabel('Epochs')
+						plt.ylabel('MSE loss')
+						title = print(" Training/validation loss iconv_layers: " + str(conv_layers) + \
+							" conv_filter_size: " + str(conv_filter_size) + \
+							" n_conv_filters_per_layer: " + str(n_conv_filters_per_layer) + \
+							" epochs: " + str(epochs) + " batch_size: " + str(batch_size))
+						plt.title(title)
+						plt.plot(model.history.history['loss'], label = 'Training loss')
+						plt.plot(model.history.history['val_loss'], label = 'Validation loss')
+						plt.legend(loc="upper right")
+						plt.legend()
+						# path to save the plot image
+						plot_path = "loss_plot_" + str(conv_layers) + "_" +  str(conv_filter_size) + "_" +  str(n_conv_filters_per_layer) +  ".png"
+						# save the image
+						plt.savefig(plot_path)
+						plt.show()
+
+						# Accuracy plot
+						plt.figure()
+						plt.xlabel('Epochs')
+						plt.ylabel('Accuracy')
+						title = print(" Training/validation accuracy iconv_layers: " + str(conv_layers) + \
+											" conv_filter_size: " + str(conv_filter_size) + \
+											" n_conv_filters_per_layer: " + str(n_conv_filters_per_layer) + \
+											" epochs: " + str(epochs) + " batch_size: " + str(batch_size))
+						plt.title(title)
+						plt.plot(model.history.history['accuracy'], label = 'Training accuracy')
+						plt.plot(model.history.history['val_accuracy'], label = 'Validation accuracy')
+						plt.legend(loc="lower right")
+						plt.legend()
+						# path to save the plot image
+						plot_path = "accuracy_plot_" + str(conv_layers) + "_" +  str(conv_filter_size) + "_" +  str(n_conv_filters_per_layer) +  ".png"
+						# save the image
+						plt.savefig(plot_path)
+						plt.show()
 					
 					if (len(models_list) > 1):
 						print("\n--------------- ALL TRAINED MODElS METRICS-----------------\n")
@@ -192,7 +199,6 @@ def main():
 						# pop-up in google chrome
 						webbrowser.get('/usr/bin/google-chrome %s').open(f_name)
 					else :
-						print(len(models_list))
 						print("There is only one model, train an other one too to compare...\n")
 					
 					continue
@@ -213,24 +219,22 @@ def main():
 				batch_size = int(input("Give the batch size that was used to train the model"))
 				# load the pre-trained model
 				autoencoder = load_model(path)
-				# collect the info in the tuple
-				model_plus_info = (autoencoder, conv_layers, conv_filter_size, n_conv_filters_per_layer, epochs, batch_size)
+
+				autoencoder.compile(loss='mean_squared_error', optimizer = RMSprop(lr=0.001, rho=0.9, epsilon=1e-08, decay=0.0), metrics=['accuracy'])
+
+				# fit the problem one time in order to get its accuracy and errors
+				auto_train = autoencoder.fit(train_X, train_X, batch_size=batch_size, epochs=1, verbose=1, validation_data=(valid_X, valid_X))
+				
+				# create a dictionary of the model plus some info in order to save it to the models' list
+				model_plus_info = {'full_model': autoencoder, 'epochs': epochs, 'batch_size': batch_size,\
+								'convolution layers': conv_layers, 'convolution filter size ': conv_filter_size,\
+								'number of conv. filters per layer': n_conv_filters_per_layer}
 				# append the model in the models' list
 				models_list.append(model_plus_info)
 			else:
 				print("Choose one of the default values")
 				continue
 
-
-"""
-
-[a, b, c] -> [10,20,30]
-
-[d, e, f] -> [10,20,40]
-
-plot(x:epochs, y: error)
-
-"""
 
 # Main function of the autoencoder
 if __name__ == "__main__":

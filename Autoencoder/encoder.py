@@ -34,7 +34,7 @@ def encoder(input_image, conv_layers, conv_filter_size, n_conv_filters_per_layer
 
 	# pooling after first layer
 	pool = MaxPooling2D(pool_size=(2,2))(first_layer)
-	dropout = Dropout(0.5, name="enc_dropout1")(pool)
+	dropout = Dropout(0.3, name="enc_dropout1")(pool)
 
 	# the encoding layers are the number of layers given to us as an argument (TODO: possibly change)
 	encoding_layers = conv_layers
@@ -47,7 +47,6 @@ def encoder(input_image, conv_layers, conv_filter_size, n_conv_filters_per_layer
 		name1 = 'enc' + str(i) + 'a'
 		name2 = 'enc' + str(i) + 'b'
 		name3 = 'enc' + str(i) + 'c'
-		print(name1)
 		# the first 2 take an input from the pooling
 		if (i == 1 or i == 2):
 			conv_layer = Conv2D(current_filters_per_layer, (conv_filter_size, conv_filter_size), name=name1, activation='relu', padding='same')(dropout)
