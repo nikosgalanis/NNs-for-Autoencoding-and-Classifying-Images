@@ -46,8 +46,11 @@ try:
     import hiplot as hip
 except:
     install('hiplot')
-    try:      
-		import hiplot as hip
+	
+try:      
+	import hiplot as hip
+except:
+	print("Hiplot can not be installed")
 
 # Build the model, consisti
 def fully_connected(endoder, n_neurons):
@@ -214,6 +217,8 @@ def main():
 							f.close()
 							# pop-up in google chrome
 							webbrowser.get('/usr/bin/google-chrome %s').open(f_name)
+						except:
+							print("HiPlot not installed, hi-dimensional plot can not be created")
 				else:
 					print("There is only one model, train an other one too to compare...\n")
 
