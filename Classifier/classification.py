@@ -75,6 +75,7 @@ def main():
 	# parse the arguments
 	args = parser.parse_args()
 
+	print("------PARSING THE DATA.....------")
 	# parse the train and test datasets
 	train_X, rows, columns = parse_X(args.trainset)
 	train_Y = parse_Y(args.trainlabels)
@@ -280,10 +281,10 @@ def main():
 				break;
 			elif (choice == 4):
 				# Get the model info
-				path = input("Give the path and the name of the model you want to load")
-				epochs = int(input("Give the number of epochs that were used to train the model"))
-				batch_size = int(input("Give the batch size that was used to train the model"))
-				fc_n_neurons = int(input("Give the number of neurons that were used to train the model"))
+				path = input("Give the path and the name of the model you want to load\n")
+				epochs = int(input("Give the number of epochs that were used to train the model\n"))
+				batch_size = int(input("Give the batch size that was used to train the model\n"))
+				fc_n_neurons = int(input("Give the number of neurons that were used to train the model\n"))
 				# load the pre-trained model
 				loaded_model = load_model(path)
 				loaded_model.compile(loss=categorical_crossentropy, optimizer=Adam(),metrics=['accuracy'])

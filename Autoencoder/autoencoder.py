@@ -62,6 +62,8 @@ def main():
 	# parse the arguments
 	args = parser.parse_args()
 
+	print("------PARSING THE DATA.....------")
+
 	# parse the MNIST dataset and obtain its rows and columns
 	dataset, rows, columns = parse_X(args.dataset)
 
