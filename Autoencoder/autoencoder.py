@@ -32,11 +32,13 @@ from common.utils import *
 from Autoencoder.encoder import *
 from Autoencoder.decoder import *
 
+
 try:
-	import hiplot as hip
+    import hiplot as hip
 except:
-	install('hiplot')
-	import hiplot as hip
+    install('hiplot')
+    try:      
+		import hiplot as hip
 
 
 import webbrowser
@@ -186,18 +188,18 @@ def main():
 							m["accuracy"] = round(m['full_model'].history.history['accuracy'][-1], 4)
 							plotting_dict_list.append(dict(list(m.items())[1:]))
 
-
-						html_str = hip.Experiment.from_iterable(plotting_dict_list).to_html(force_full_width=True)
-						
-						# open a file to save the html containing the plot 
-						f_name = "hiplot_result_" + str(plots) + '.html'
-						# increase the plot variable
-						plots += 1
-						f = open(f_name, "w")
-						f.write(html_str)
-						f.close()
-						# pop-up in google chrome
-						webbrowser.get('/usr/bin/google-chrome %s').open(f_name)
+						try:
+							html_str = hip.Experiment.from_iterable(plotting_dict_list).to_html(force_full_width=True)
+							
+							# open a file to save the html containing the plot 
+							f_name = "hiplot_result_" + str(plots) + '.html'
+							# increase the plot variable
+							plots += 1
+							f = open(f_name, "w")
+							f.write(html_str)
+							f.close()
+							# pop-up in google chrome
+							webbrowser.get('/usr/bin/google-chrome %s').open(f_name)
 					else :
 						print("There is only one model, train an other one too to compare...\n")
 					
@@ -211,12 +213,12 @@ def main():
 				break
 			elif (choice == 4):
 				# Get the model info
-				path = input("Give the path and the name of the model you want to load")	
-				conv_layers = int(input("Give the number of convolutional layers that were used to train the model"))
-				conv_filter_size = int(input("Give the conv_filter_size that was used to train the model"))
-				n_conv_filters_per_layer = int(input("Give the number of convolution filters per layer that were used to train the model"))
-				epochs = int(input("Give the number of epochs that were used to train the model"))
-				batch_size = int(input("Give the batch size that was used to train the model"))
+				path = input("Give the path and the name of the model you want to load\n")	
+				conv_layers = int(input("Give the number of convolutional layers that were used to train the model\n"))
+				conv_filter_size = int(input("Give the conv_filter_size that was used to train the model\n"))
+				n_conv_filters_per_layer = int(input("Give the number of convolution filters per layer that were used to train the model\n"))
+				epochs = int(input("Give the number of epochs that were used to train the model\n"))
+				batch_size = int(input("Give the batch size that was used to train the model\n"))
 				# load the pre-trained model
 				autoencoder = load_model(path)
 

@@ -41,11 +41,13 @@ from Autoencoder.decoder import *
 
 import webbrowser
 
+
 try:
-	import hiplot as hip
+    import hiplot as hip
 except:
-	install('hiplot')
-	import hiplot as hip
+    install('hiplot')
+    try:      
+		import hiplot as hip
 
 # Build the model, consisti
 def fully_connected(endoder, n_neurons):
@@ -201,16 +203,17 @@ def main():
 						plotting_dict_list.append(dict(list(m.items())[1:]))
 
     					# get the result of hiplot in an html page
-						html_str = hip.Experiment.from_iterable(plotting_dict_list).to_html(force_full_width=True)
-						# open a file to save the html containing the plot 
-						f_name = "../Results/hiplots/hiplot_result_" + str(plots) + '.html'
-						# increase the plot variable
-						plots += 1
-						f = open(f_name, "w")
-						f.write(html_str)
-						f.close()
-						# pop-up in google chrome
-						webbrowser.get('/usr/bin/google-chrome %s').open(f_name)
+						try:
+							html_str = hip.Experiment.from_iterable(plotting_dict_list).to_html(force_full_width=True)
+							# open a file to save the html containing the plot 
+							f_name = "../Results/hiplots/hiplot_result_" + str(plots) + '.html'
+							# increase the plot variable
+							plots += 1
+							f = open(f_name, "w")
+							f.write(html_str)
+							f.close()
+							# pop-up in google chrome
+							webbrowser.get('/usr/bin/google-chrome %s').open(f_name)
 				else:
 					print("There is only one model, train an other one too to compare...\n")
 
