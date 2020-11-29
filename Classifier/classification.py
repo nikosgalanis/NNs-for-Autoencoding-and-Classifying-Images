@@ -42,15 +42,15 @@ from Autoencoder.decoder import *
 import webbrowser
 
 
-try:
-    import hiplot as hip
-except:
-    install('hiplot')
+# try:
+#     import hiplot as hip
+# except:
+#     install('hiplot')
 	
 try:      
 	import hiplot as hip
 except:
-	print("Hiplot can not be installed")
+	print("Hiplot can not be installed, please install it using pip install hiplot")
 
 # Build the model, consisti
 def fully_connected(endoder, n_neurons):

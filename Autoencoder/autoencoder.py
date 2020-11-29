@@ -33,15 +33,15 @@ from Autoencoder.encoder import *
 from Autoencoder.decoder import *
 
 
-try:
-    import hiplot as hip
-except:
-    install('hiplot')
+# try:
+#     import hiplot as hip
+# except:
+#     install('hiplot')
 	
 try:      
 	import hiplot as hip
 except:
-	print("Hiplot can not be installed")
+	print("Hiplot can not be installed, please install it using pip install hiplot")
 
 import webbrowser
 
