@@ -31,7 +31,7 @@ Some sample results from our experiments in the models are the following:
 ![alt text](Results/Autoencoder/model1_4_3_32_100_86/loss_plot.png)
 
                                 Accuracy Plot:
-![alt text](Results/Autoencoder/model1_4_3_32_100_86/accuracy_plot.png)
+![alt text](Results/Autoencoder/model1_4_3_32_100_86/accuracy_plot.jpg)
 
 We also created a high dimensional plot in order to visualze the accuracy and the loss for our best models, using HiPlot.
 
