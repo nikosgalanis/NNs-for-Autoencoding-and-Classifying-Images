@@ -27,10 +27,10 @@ Specifics of our code implementation can be found under the [README.pdf](README.
 Some sample results from our experiments in the models are the following:
 
 ### Autoencoder
-                            Accuracy Plot:
+                            Error Plot:
 ![alt text](Results/Autoencoder/model1_4_3_32_100_86/loss_plot.png)
 
-                                Error Plot:
+                                Accuracy Plot:
 ![alt text](Results/Autoencoder/model1_4_3_32_100_86/accuracy_plot.png)
 
 We also created a high dimensional plot in order to visualze the accuracy and the loss for our best models, using HiPlot.
